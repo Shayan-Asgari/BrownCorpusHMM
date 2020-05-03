@@ -38,12 +38,12 @@ public class BrownCorpusHMM
 					 char b = Character.toLowerCase(c);
 					 if(Character.isLetter(b))
 					 {
-						 observations.add(b - 'a' + 1); // a =0, z = 25
+						 observations.add(b - 'a'); // a =0, z = 25
 						 charactersReadSoFar++;
 					 }
 					 else if(Character.isSpaceChar(b))
 					 {
-						 observations.add(27); //space = 26
+						 observations.add(26); //space = 26
 						 charactersReadSoFar++;
 					 }
 					 if(charactersReadSoFar == LENGTH_OF_TEXT)
@@ -213,6 +213,7 @@ public class BrownCorpusHMM
 				}
 			}
 			
+			
 			//Special case for gamma[T-1][i] (as above, no need to normalize)
 			for (int i = 0; i < N; i++) {
 				gamma[T-1][i] = alpha[T-1][i];
@@ -239,7 +240,7 @@ public class BrownCorpusHMM
 					A[i][j] = numer/denom;
 				}
 			}
-			
+
 			//Re-estimate B
 			//
 			for (int i = 0; i < N; i++) {
