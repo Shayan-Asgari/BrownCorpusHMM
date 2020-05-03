@@ -182,7 +182,7 @@ public class BrownCorpusHMM
 		double[][] alpha = new double[T][N];
 		double[][] beta = new double[T][N];
 		
-		int maxIters = 500;
+		int maxIters = 500 ;
 		int iters = 0;
 		double oldLogProb = Double.NEGATIVE_INFINITY;
 		
