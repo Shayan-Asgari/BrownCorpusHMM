@@ -5,7 +5,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
 import java.lang.Math;
-
+import java.text.DecimalFormat;
 public class BrownCorpusHMM 
 {
 	public BrownCorpusHMM()
@@ -295,6 +295,7 @@ public class BrownCorpusHMM
 				model.setA(A);
 				model.setB(B);
 				model.setPi(pi);
+				System.out.println("NUMBER OF ITERATIONS " + iters);
 				System.out.println("Final Log Probability: " + logProb);
 				System.out.println("\n\n");
 				//Erased model = new model(a,b,pi)
@@ -308,7 +309,7 @@ public class BrownCorpusHMM
 	{
 		//{.13845, .00000, .00062,.00000, LAST: .33211}
 		//{.00075, .02311,.05614,.06937, LAST: .01298}
-		
+		DecimalFormat df1 = new DecimalFormat("0.####");
 		try {
 			BrownCorpusHMM hmm = new BrownCorpusHMM();
 			BrownCorpusModel model = hmm.problem3(2, 27);
@@ -320,7 +321,7 @@ public class BrownCorpusHMM
 			System.out.println("FINAL A MATRIX: \n\n");
 			for (int row = 0; row < A.length; row++) {
 		        for (int col = 0; col < A[row].length; col++) {
-		            System.out.printf("%4f,  ", A[row][col]);
+		            System.out.printf("%.5f,  ", A[row][col]);
 		        }
 		        System.out.println();
 		    }
@@ -329,12 +330,11 @@ public class BrownCorpusHMM
 			System.out.println("FINAL B MATRIX: \n\n");
 			for (int row = 0; row < B.length; row++) {
 		        for (int col = 0; col < B[row].length; col++) {
-		            System.out.printf("%4f,  ", B[row][col]);
+		            System.out.printf("%.5"
+		            		+ "f,  ", B[row][col]);
 		        }
 		        System.out.println();
 		    }
-			
-	
 			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

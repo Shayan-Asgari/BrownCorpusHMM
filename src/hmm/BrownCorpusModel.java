@@ -11,11 +11,11 @@ public class BrownCorpusModel extends Model
 	public static final double[][] A_ARRAY = 
 		{
 			
-											{0.47168, 0.52532},
+											{0.47468, 0.52532},
 											{0.51656, 0.48344}
 											
 		};
-	public static final double[] PI = {0.051316,0.48684};
+	public static final double[] PI = {0.51316,0.48684};
 	
 	public static final double[][] B_ARRAY = 
 		{
