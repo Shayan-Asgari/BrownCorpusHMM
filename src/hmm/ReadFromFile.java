@@ -16,6 +16,7 @@ public class ReadFromFile {
 		 int charactersReadSoFar = 0;
 		 while ((inputLine = in.readLine()) != null)
 		 {
+	
 			 if(!inputLine.isBlank())
 			 {
 				 System.out.println(inputLine);

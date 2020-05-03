@@ -14,14 +14,14 @@ public class BrownCorpusHMM
 	}
 	public double[] c;
 	
-	public static final int LENGTH_OF_TEXT = 50000;
+	public  final int LENGTH_OF_TEXT = 50000;
 	/**
 	 * Get observations from 'Brown Corpus'
 	 * @param url the url of the 'Brown Corpus' .txt file
 	 * @return observations an ArrayList<Integer> containing integers representing 
 	 * letters(0-26) and spaces(27)
 	 */
-	public static int[] getObservations(String url) throws Exception
+	public int[] getObservations(String url) throws Exception
 	{
 		 ArrayList<Integer> observations = new ArrayList<Integer>();
 		 URL oracle = new URL(url);
@@ -38,12 +38,12 @@ public class BrownCorpusHMM
 					 char b = Character.toLowerCase(c);
 					 if(Character.isLetter(b))
 					 {
-						 observations.add(b - 'a'); // a =0, z = 25
+						 observations.add(b - 'a' + 1); // a =0, z = 25
 						 charactersReadSoFar++;
 					 }
 					 else if(Character.isSpaceChar(b))
 					 {
-						 observations.add(26); //space = 26
+						 observations.add(27); //space = 26
 						 charactersReadSoFar++;
 					 }
 					 if(charactersReadSoFar == LENGTH_OF_TEXT)
@@ -90,7 +90,7 @@ public class BrownCorpusHMM
 		}
 		
 		//Scale the alpha[0][i]
-		c[0] = 1 / c[0];
+		c[0] = 1.0 / c[0];
 		for (int i = 0; i < N; i++) {
 			alpha[0][i] = c[0] * alpha[0][i];
 		}
@@ -111,6 +111,7 @@ public class BrownCorpusHMM
 			}
 			
 			//Scale alphas[t][i]
+
 			c[t] = 1 / c[t];
 			for (int i = 0; i < N; i++) {
 				alpha[t][i] = c[t] * alpha[t][i];
@@ -165,10 +166,10 @@ public class BrownCorpusHMM
 	 * Q distinct states of the markov process
 	 * A State transition probabilities
 	 * B observation probability matrix
-	 * PI initial state distribution
+	 * PI init2ial state distribution
 	 * O observation sequence
 	 */
-	public Model problem3(int N, int M) throws Exception {
+	public BrownCorpusModel problem3(int N, int M) throws Exception {
 		
 		BrownCorpusModel model = new BrownCorpusModel();
 		double[][] A = model.getA();
@@ -182,7 +183,7 @@ public class BrownCorpusHMM
 		double[][] alpha = new double[T][N];
 		double[][] beta = new double[T][N];
 		
-		int maxIters = 500 ;
+		int maxIters = 100 ;
 		int iters = 0;
 		double oldLogProb = Double.NEGATIVE_INFINITY;
 		
@@ -204,7 +205,8 @@ public class BrownCorpusHMM
 			for (int t = 0; t < T - 1; t++) {
 				for (int i = 0; i < N; i++) {
 					gamma[t][i] = 0;
-					for (int j = 0; i < N; j++) {
+					for (int j = 0; j < N; j++) {
+						double z = B[j][O[t+1]];
 						digamma[t][i][j] = (alpha[t][i] * A[i][j] * B[j][O[t+1]] * beta[t+1][j]);
 						gamma[t][i] = gamma[t][i] + digamma[t][i][j];
 					}
@@ -239,6 +241,7 @@ public class BrownCorpusHMM
 			}
 			
 			//Re-estimate B
+			//
 			for (int i = 0; i < N; i++) {
 				double denom = 0;
 				for (int t = 0; t < T; t++) {
@@ -246,7 +249,9 @@ public class BrownCorpusHMM
 				}
 				for (int j = 0; j < M; j++) {
 					double numer = 0;
-					for (int t = 0; j < T; t++) {
+				
+					for (int t = 0; t < T; t++) {
+						
 						if (O[t] == j) {
 							numer = numer + gamma[t][i];
 						}
@@ -264,17 +269,19 @@ public class BrownCorpusHMM
 			logProb *= -1;
 			
 			/* To iterate or not to iterate, that is the question... */
-			
 			iters += 1;
-			if (iters < maxIters && logProb > oldLogProb) {
+			
+			if ((iters < maxIters) && (logProb > oldLogProb)) {
 				oldLogProb = logProb;
-				continue;
 			} else {
 				iterate = false;
 				model.setA(A);
 				model.setB(B);
 				model.setPi(pi);
+				System.out.println("Final Log Probability: " + logProb);
+				System.out.println("\n\n");
 				//Erased model = new model(a,b,pi)
+				
 			}
 		}
 		return model;
@@ -282,9 +289,36 @@ public class BrownCorpusHMM
 	
 	public static void main(String[] args)
 	{
-		BrownCorpusHMM hmm = new BrownCorpusHMM();
+		//{.13845, .00000, .00062,.00000, LAST: .33211}
+		//{.00075, .02311,.05614,.06937, LAST: .01298}
+		
 		try {
-			hmm.problem3(2, 27);
+			BrownCorpusHMM hmm = new BrownCorpusHMM();
+			BrownCorpusModel model = hmm.problem3(2, 27);
+			System.out.println("FINAL PI MATRIX: \n\n");
+			System.out.println(Arrays.toString(model.getPi()));
+			System.out.println("\n\n");
+			
+			double[][] A = model.getA();
+			System.out.println("FINAL A MATRIX: \n\n");
+			for (int row = 0; row < A.length; row++) {
+		        for (int col = 0; col < A[row].length; col++) {
+		            System.out.printf("%4f,  ", A[row][col]);
+		        }
+		        System.out.println();
+		    }
+			
+			double[][] B = model.getB();
+			System.out.println("FINAL B MATRIX: \n\n");
+			for (int row = 0; row < B.length; row++) {
+		        for (int col = 0; col < B[row].length; col++) {
+		            System.out.printf("%4f,  ", B[row][col]);
+		        }
+		        System.out.println();
+		    }
+			
+	
+			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
