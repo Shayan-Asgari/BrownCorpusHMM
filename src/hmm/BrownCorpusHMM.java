@@ -4,24 +4,39 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
+
+import javax.swing.JOptionPane;
+
 import java.lang.Math;
 import java.text.DecimalFormat;
+
+/**
+ * Class which implements and runs a HMM model from the first 50k characters of 'Brown Corpus'
+ * @author Shayan Asgari, Sonnan Naeem 
+ *
+ */
 public class BrownCorpusHMM 
 {
-	public BrownCorpusHMM()
-	{
-		
-	}
+	private int maxIterations;
+	private int observationSequenceLength;
+	private BrownCorpusModel model;
+	
+	//Used for scaling alpha values
 	public double[] c;
 	
-	public  final int LENGTH_OF_TEXT = 50000;
-	/**
-	 * Get observations from 'Brown Corpus'
-	 * @param url the url of the 'Brown Corpus' .txt file
-	 * @return observations an ArrayList<Integer> containing integers representing 
-	 * letters(0-26) and spaces(27)
-	 */
 	
+	public BrownCorpusHMM(int maxIterations, int observationSequenceLength)
+	{
+		this.maxIterations = maxIterations;
+		this.observationSequenceLength = observationSequenceLength;
+		this.model = new BrownCorpusModel();
+	}
+	
+	/**
+	 * Helper method which transposes a 2D matrix
+	 * @param matrix to transpose
+	 * @return transposedMatrix 
+	 */
 	public static double[][] transposeMatrix(double[][] matrix)
 	{
 	    int m = matrix.length;
@@ -37,6 +52,12 @@ public class BrownCorpusHMM
 	    return transposedMatrix;
 	}
 	
+	/**
+	 * Get observations from first 50k characters of 'Brown Corpus' only including (a-z, ' ')
+	 * @param url the url of the 'Brown Corpus' .txt file
+	 * @return observations an ArrayList<Integer> containing integers representing 
+	 * letters(0-26) and spaces(27)
+	 */
 	public int[] getObservations(String url) throws Exception
 	{
 		 ArrayList<Integer> observations = new ArrayList<Integer>();
@@ -62,10 +83,10 @@ public class BrownCorpusHMM
 						 observations.add(26); //space = 26
 						 charactersReadSoFar++;
 					 }
-					 if(charactersReadSoFar == LENGTH_OF_TEXT)
+					 if(charactersReadSoFar == this.observationSequenceLength)
 					 {
-						 int[] o= new int[50000];
-						 for(int z = 0; z<50000; z++)
+						 int[] o= new int[observationSequenceLength];
+						 for(int z = 0; z<observationSequenceLength; z++)
 						 {
 							 o[z] = observations.get(z);
 						 }
@@ -79,15 +100,14 @@ public class BrownCorpusHMM
 		 return null;	
 	}
 	
-	/*
-	 * T is length of observation sequence
-	 * N number of states in the model (H, C)
-	 * M number of observation symbols (S, M, L)
-	 * Q distinct states of the markov process
-	 * A State transition probabilities
-	 * B observation probability matrix
-	 * PI initial state distribution
-	 * O observation sequence
+	
+	/**
+	 * Alpha pass implementation outputs an alpha array that helps compute score of model
+	 * @param A the state transition probabilities
+	 * @param B the observation probability matrix
+	 * @param pi the initial state distribution
+	 * @param O the observation sequence (50k Brown Corpus text characters)
+	 * @return alpha the array of alpha values produced from alpha pass
 	 */
 	public double[][] alphaPass(double[][] A, double[][] B, double[] pi, int[] O)
 	{
@@ -101,7 +121,7 @@ public class BrownCorpusHMM
 		//Compute alpha[0][i]
 		c[0] = 0;
 		for (int i = 0; i < N; i++) {
-			alpha[0][i] = pi[i] * B[i][O[0]]; //TODO If O[0] has the value 26, what if B[i][26] doesn't exist
+			alpha[0][i] = pi[i] * B[i][O[0]];
 			c[0] = c[0] + alpha[0][i];
 		}
 		
@@ -127,7 +147,6 @@ public class BrownCorpusHMM
 			}
 			
 			//Scale alphas[t][i]
-
 			c[t] = 1 / c[t];
 			for (int i = 0; i < N; i++) {
 				alpha[t][i] = c[t] * alpha[t][i];
@@ -138,15 +157,13 @@ public class BrownCorpusHMM
 		return alpha;
 	}
 	
-	/*
-	 * T is length of observation sequence
-	 * N number of states in the model (H, C)
-	 * M number of observation symbols (S, M, L)
-	 * Q distinct states of the markov process
-	 * A State transition probabilities
-	 * B observation probability matrix
-	 * PI initial state distribution
-	 * O observation sequence
+	/**
+	 * Beta pass implementation outputs a beta array that helps compute the best number of hidden states
+	 * @param A the state transition probabilities
+	 * @param B the observation probability matrix
+	 * @param pi the initial state distribution
+	 * @param O the observation sequence (50k Brown Corpus text characters)
+	 * @return alpha the array of beta values produced from beta pass
 	 */
 	public double[][] betaPass(double[][]A, double[][]B, double[] pi, int[] O) //TODO Do we get c[] from alpha or from beta pass
 	{	
@@ -175,36 +192,26 @@ public class BrownCorpusHMM
 		return beta;
 	}
 	
-	/*
-	 * T is length of observation sequence
-	 * N number of states in the model (H, C)
-	 * M number of observation symbols (S, M, L)
-	 * Q distinct states of the markov process
-	 * A State transition probabilities
-	 * B observation probability matrix
-	 * PI init2ial state distribution
-	 * O observation sequence
+	/**
+	 * Build a Hidden Markov Model by using alphaPass and betaPass to help re-estimate the model
+	 * @return model the final HMM model with a modified A, B, and PI matrices
 	 */
-	public BrownCorpusModel problem3(int N, int M) throws Exception {
+	public BrownCorpusModel buildHMM() throws Exception {
 		
-		BrownCorpusModel model = new BrownCorpusModel();
 		double[][] A = model.getA();
 		double[][] B = model.getB();
 		double[] pi = model.getPi();
-		
 		int[] O = this.getObservations("http://www.sls.hawaii.edu/bley-vroman/brown_nolines.txt");
 		
+		int N = A.length;
+		int M = B[0].length;
 		int T = O.length;
 		
 		double[][] alpha = new double[T][N];
 		double[][] beta = new double[T][N];
 		
-		int maxIters = 100 ;
-		int iters = 0;
+		int iterations = 0;
 		double oldLogProb = Double.NEGATIVE_INFINITY;
-		
-		
-		
 		boolean iterate = true;
 		
 		while (iterate) {
@@ -258,7 +265,6 @@ public class BrownCorpusHMM
 			}
 
 			//Re-estimate B
-			//
 			for (int i = 0; i < N; i++) {
 				double denom = 0;
 				for (int t = 0; t < T; t++) {
@@ -286,20 +292,16 @@ public class BrownCorpusHMM
 			logProb *= -1;
 			
 			/* To iterate or not to iterate, that is the question... */
-			iters += 1;
+			iterations += 1;
 			
-			if ((iters < maxIters) && (logProb > oldLogProb)) {
+			if ((iterations < this.maxIterations) && (logProb > oldLogProb)) {
 				oldLogProb = logProb;
 			} else {
 				iterate = false;
 				model.setA(A);
 				model.setB(B);
 				model.setPi(pi);
-				System.out.println("NUMBER OF ITERATIONS " + iters);
-				System.out.println("Final Log Probability: " + logProb);
-				System.out.println("\n\n");
-				//Erased model = new model(a,b,pi)
-				
+				System.out.println("Final Log Probability: log[P(O|Lambda)] " + logProb + "\n");
 			}
 		}
 		return model;
@@ -307,38 +309,40 @@ public class BrownCorpusHMM
 	
 	public static void main(String[] args)
 	{
-		//{.13845, .00000, .00062,.00000, LAST: .33211}
-		//{.00075, .02311,.05614,.06937, LAST: .01298}
-		DecimalFormat df1 = new DecimalFormat("0.####");
-		try {
-			BrownCorpusHMM hmm = new BrownCorpusHMM();
-			BrownCorpusModel model = hmm.problem3(2, 27);
-			System.out.println("FINAL PI MATRIX: \n\n");
-			System.out.println(Arrays.toString(model.getPi()));
-			System.out.println("\n\n");
+		char[] lettersToRepresent = "abcdefghijklmnopqrstuvwxyz*".toCharArray();
+		int indexOfLetter = 0;
+		try
+		{
+			BrownCorpusHMM hmm = new BrownCorpusHMM(100, BrownCorpusModel.LENGTH_OF_TEXT);
+			BrownCorpusModel model = hmm.buildHMM();
+			System.out.println("FINAL PI MATRIX:");
+			System.out.println(Arrays.toString(model.getPi()) + "\n");
 			
 			double[][] A = model.getA();
-			System.out.println("FINAL A MATRIX: \n\n");
+			System.out.println("FINAL A MATRIX: \n");
 			for (int row = 0; row < A.length; row++) {
 		        for (int col = 0; col < A[row].length; col++) {
-		            System.out.printf("%.5f,  ", A[row][col]);
+		            System.out.printf("%.5f  ", A[row][col]);
 		        }
 		        System.out.println();
 		    }
 			
+			System.out.println("\nFINAL B MATRIX: \n");
 			double[][] B = BrownCorpusHMM.transposeMatrix(model.getB());	
-			System.out.println("FINAL B MATRIX: \n\n");
+			System.out.println("     1        2");
 			for (int row = 0; row < B.length; row++) {
+				System.out.print(lettersToRepresent[indexOfLetter++] + " ");
 		        for (int col = 0; col < B[row].length; col++) {
 		            System.out.printf("%.5"
-		            		+ "f,  ", B[row][col]);
+		            		+ "f  ", B[row][col]);
 		        }
 		        System.out.println();
 		    }
 			
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} 
+		catch (Exception e) 
+		{
+			JOptionPane.showMessageDialog(null, e.getMessage());
 		}
 	}
 }

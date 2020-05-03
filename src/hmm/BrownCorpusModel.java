@@ -1,5 +1,10 @@
 package hmm;
 
+/**
+ * Special HMM for 'Brown Corpus' text which has all parameters of lambda predetermined
+ * @author Shayan Asgari, Sonnan Naeem 
+ *
+ */
 public class BrownCorpusModel extends Model 
 {
 	
@@ -7,7 +12,15 @@ public class BrownCorpusModel extends Model
 	public double[][] B;
 	public double[] pi;
 	
-
+	
+	/**
+	 * Number of observations to fetch
+	 */
+	public static final int LENGTH_OF_TEXT = 50000;
+	
+	/**
+	 * Initialize the initial A, B, PI matrices to predetermined values
+	 */
 	public static final double[][] A_ARRAY = 
 		{
 			
@@ -41,14 +54,14 @@ public class BrownCorpusModel extends Model
 												  0.03548, 
 												  0.03922,
 												  0.04062,
-												  0.03455,
+												  0.03455 ,
 												  0.03595,
 												  0.03408, 
 												  0.03408,
 												  0.03688
 											  },
 											  
-											  {
+											  { 
 												  0.03909,
 												  0.03537,
 												  0.03537,

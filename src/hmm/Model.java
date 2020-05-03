@@ -1,55 +1,77 @@
 package hmm;
 
+/**
+ * Generic Model class for building an HMM which initializes all of lambda's parameters
+ * @author Shayan Asgari, Sonnan Naeem 
+ *
+ */
 public class Model {
 	public double[][] A;
 	public double[][] B;
 	public double[] pi;
 	
-	public Model (double[][] A, double[][] B, double[] pi) {
+	/**
+	 * Generic Model initializer for HMM
+	 * @param A
+	 * @param B
+	 * @param pi
+	 */
+	public Model (double[][] A, double[][] B, double[] pi) 
+	{
 		this.A = A;
 		this.B = B;
 		this.pi = pi;
 	}
 
 	/**
-	 * @return the a
+	 * Retrieve A matrix
+	 * @return A
 	 */
-	public double[][] getA() {
+	public double[][] getA() 
+	{
 		return A;
 	}
 
 	/**
-	 * @param a the a to set
-	 */
-	public void setA(double[][] a) {
-		A = a;
-	}
-
-	/**
-	 * @return the b
+	 * Retrieve B matrix
+	 * @return B
 	 */
 	public double[][] getB() {
 		return B;
 	}
-
+	
 	/**
-	 * @param b the b to set
-	 */
-	public void setB(double[][] b) {
-		B = b;
-	}
-
-	/**
-	 * @return the pi
+	 * Retrieve PI matrix
+	 * @return pi
 	 */
 	public double[] getPi() {
 		return pi;
 	}
+	
+	/**
+	 * Set the A matrix to a new one
+	 * @param a the new matrix 
+	 */
+	public void setA(double[][] a) 
+	{
+		A = a;
+	}
 
 	/**
-	 * @param pi the pi to set
+	 * Set the B matrix to a new one
+	 * @param b the new matrix 
 	 */
-	public void setPi(double[] pi) {
+	public void setB(double[][] b) 
+	{
+		B = b;
+	}
+	
+	/**
+	 * Set the PI matrix to a new one
+	 * @param pi the new matrix 
+	 */
+	public void setPi(double[] pi) 
+	{
 		this.pi = pi;
 	}
 }
