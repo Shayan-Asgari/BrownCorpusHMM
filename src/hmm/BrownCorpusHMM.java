@@ -21,6 +21,22 @@ public class BrownCorpusHMM
 	 * @return observations an ArrayList<Integer> containing integers representing 
 	 * letters(0-26) and spaces(27)
 	 */
+	
+	public static double[][] transposeMatrix(double[][] matrix)
+	{
+	    int m = matrix.length;
+	    int n = matrix[0].length;
+
+	    double[][] transposedMatrix = new double[n][m];
+
+	    for(int x = 0; x < n; x++) {
+	        for(int y = 0; y < m; y++) {
+	            transposedMatrix[x][y] = matrix[y][x];
+	        }
+	    }
+	    return transposedMatrix;
+	}
+	
 	public int[] getObservations(String url) throws Exception
 	{
 		 ArrayList<Integer> observations = new ArrayList<Integer>();
@@ -309,7 +325,7 @@ public class BrownCorpusHMM
 		        System.out.println();
 		    }
 			
-			double[][] B = model.getB();
+			double[][] B = BrownCorpusHMM.transposeMatrix(model.getB());	
 			System.out.println("FINAL B MATRIX: \n\n");
 			for (int row = 0; row < B.length; row++) {
 		        for (int col = 0; col < B[row].length; col++) {
